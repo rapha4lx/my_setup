@@ -31,6 +31,7 @@ Optional variables:
 - `INSTALL_DOCKER`: Install Docker. Defaults to `yes`.
 - `INSTALL_LAZYDOCKER`: Install LazyDocker. Defaults to `yes`.
 - `INSTALL_NEOVIM`: Install Neovim. Defaults to `yes`.
+- `NEOVIM_MIN_VERSION`: Minimum Neovim version required for LazyVim. Defaults to `0.11.2`.
 - `INSTALL_LAZYVIM`: Install LazyVim starter. Defaults to `yes`.
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.

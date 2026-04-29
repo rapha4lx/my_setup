@@ -331,13 +331,29 @@ install_lazydocker() {
   esac
 }
 
-install_neovim() {
+nvim_version() {
   if has nvim; then
-    log "Neovim already installed"
-    return
+    nvim --version 2>/dev/null | sed -n '1s/^NVIM v//p' | sed 's/[^0-9.].*$//'
   fi
+}
 
-  log "Installing Neovim"
+version_ge() {
+  awk -v current="$1" -v required="$2" '
+    BEGIN {
+      split(current, c, ".")
+      split(required, r, ".")
+      for (i = 1; i <= 3; i++) {
+        cv = c[i] + 0
+        rv = r[i] + 0
+        if (cv > rv) exit 0
+        if (cv < rv) exit 1
+      }
+      exit 0
+    }
+  '
+}
+
+install_neovim_package() {
   if has apt-get; then
     run_as_root apt-get update
     run_as_root apt-get install -y neovim
@@ -352,17 +368,90 @@ install_neovim() {
   elif has zypper; then
     run_as_root zypper --non-interactive install neovim
   elif has brew; then
-    brew install neovim
+    brew install neovim || brew upgrade neovim
   else
-    warn "No supported package manager found for Neovim. Install nvim manually."
+    return 1
   fi
+}
+
+install_neovim_official_release() {
+  os_name="$(uname -s)"
+  arch_name="$(uname -m)"
+
+  case "$os_name:$arch_name" in
+    Linux:x86_64 | Linux:amd64)
+      archive_name="nvim-linux-x86_64"
+      ;;
+    Linux:aarch64 | Linux:arm64)
+      archive_name="nvim-linux-arm64"
+      ;;
+    Darwin:x86_64)
+      archive_name="nvim-macos-x86_64"
+      ;;
+    Darwin:arm64 | Darwin:aarch64)
+      archive_name="nvim-macos-arm64"
+      ;;
+    *)
+      warn "Official Neovim archive is not configured for $os_name/$arch_name"
+      return 1
+      ;;
+  esac
+
+  has tar || die "tar is required to install the official Neovim archive."
+
+  archive_path="/tmp/${archive_name}.tar.gz"
+  install_dir="/opt/$archive_name"
+  download_url="https://github.com/neovim/neovim/releases/latest/download/${archive_name}.tar.gz"
+
+  log "Installing official Neovim release from $download_url"
+  curl -fsSL "$download_url" -o "$archive_path"
+  run_as_root mkdir -p /opt /usr/local/bin
+  run_as_root rm -rf "$install_dir"
+  run_as_root tar -C /opt -xzf "$archive_path"
+  run_as_root ln -sf "$install_dir/bin/nvim" /usr/local/bin/nvim
+  rm -f "$archive_path"
+}
+
+install_neovim() {
+  required_nvim_version="${NEOVIM_MIN_VERSION:-0.11.2}"
+  current_nvim_version="$(nvim_version || true)"
+
+  if [ -n "$current_nvim_version" ] && version_ge "$current_nvim_version" "$required_nvim_version"; then
+    log "Neovim $current_nvim_version already installed"
+    return
+  fi
+
+  if [ -n "$current_nvim_version" ]; then
+    warn "Neovim $current_nvim_version is older than required $required_nvim_version"
+  else
+    log "Neovim is not installed"
+  fi
+
+  install_neovim_package || warn "No supported package manager found for Neovim package install."
+  current_nvim_version="$(nvim_version || true)"
+
+  if [ -n "$current_nvim_version" ] && version_ge "$current_nvim_version" "$required_nvim_version"; then
+    log "Neovim $current_nvim_version installed"
+    return
+  fi
+
+  install_neovim_official_release || warn "Could not install official Neovim release."
+  current_nvim_version="$(nvim_version || true)"
+
+  if [ -z "$current_nvim_version" ] || ! version_ge "$current_nvim_version" "$required_nvim_version"; then
+    die "Neovim $required_nvim_version or newer is required for LazyVim."
+  fi
+
+  log "Neovim $current_nvim_version installed"
 }
 
 install_lazyvim() {
   nvim_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+  required_nvim_version="${NEOVIM_MIN_VERSION:-0.11.2}"
+  current_nvim_version="$(nvim_version || true)"
 
-  if ! has nvim; then
-    warn "Neovim is not available; skipping LazyVim starter clone"
+  if [ -z "$current_nvim_version" ] || ! version_ge "$current_nvim_version" "$required_nvim_version"; then
+    warn "Neovim $required_nvim_version or newer is required; skipping LazyVim starter clone"
     return
   fi
 
