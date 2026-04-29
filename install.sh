@@ -418,6 +418,9 @@ install_custom_oh_my_zsh() {
   zsh_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
   custom_target="$zsh_custom_dir/my_setup.zsh"
   custom_source="${CUSTOM_OH_MY_ZSH_SOURCE:-https://raw.githubusercontent.com/rapha4lx/my_setup/main/oh-my-zsh/my_setup.zsh}"
+  theme_dir="$zsh_custom_dir/themes"
+  theme_target="$theme_dir/my_setup.zsh-theme"
+  theme_source="${CUSTOM_OH_MY_ZSH_THEME_SOURCE:-https://raw.githubusercontent.com/rapha4lx/my_setup/main/oh-my-zsh/themes/my_setup.zsh-theme}"
 
   if [ ! -d "$zsh_custom_dir" ]; then
     warn "Oh My Zsh custom directory not found at $zsh_custom_dir; skipping custom file"
@@ -433,6 +436,17 @@ install_custom_oh_my_zsh() {
       cp "$custom_source" "$custom_target"
       ;;
   esac
+
+  log "Installing custom Oh My Zsh theme"
+  mkdir -p "$theme_dir"
+  case "$theme_source" in
+    http://* | https://*)
+      curl -fsSL "$theme_source" -o "$theme_target"
+      ;;
+    *)
+      cp "$theme_source" "$theme_target"
+      ;;
+  esac
 }
 
 configure_zshrc() {
@@ -444,7 +458,7 @@ configure_zshrc() {
 export ZSH="$HOME/.oh-my-zsh"
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
-ZSH_THEME="robbyrussell"
+ZSH_THEME="my_setup"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
 EOF
@@ -455,7 +469,7 @@ EOF
 export ZSH="$HOME/.oh-my-zsh"
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
-ZSH_THEME="robbyrussell"
+ZSH_THEME="my_setup"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
 EOF
@@ -476,6 +490,18 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export EDITOR="nvim"
+EOF
+  fi
+
+  if grep -q '^ZSH_THEME=' "$zshrc"; then
+    theme_tmp="${zshrc}.my_setup.$$"
+    sed 's/^ZSH_THEME=.*/ZSH_THEME="my_setup"/' "$zshrc" >"$theme_tmp"
+    mv "$theme_tmp" "$zshrc"
+  else
+    log "Setting Oh My Zsh theme to my_setup in $zshrc"
+    cat >>"$zshrc" <<'EOF'
+
+ZSH_THEME="my_setup"
 EOF
   fi
 }
@@ -538,6 +564,9 @@ main() {
   if is_yes "$INSTALL_CUSTOM_OH_MY_ZSH"; then
     if [ -f "./oh-my-zsh/my_setup.zsh" ] && [ -z "${CUSTOM_OH_MY_ZSH_SOURCE:-}" ]; then
       CUSTOM_OH_MY_ZSH_SOURCE="./oh-my-zsh/my_setup.zsh"
+    fi
+    if [ -f "./oh-my-zsh/themes/my_setup.zsh-theme" ] && [ -z "${CUSTOM_OH_MY_ZSH_THEME_SOURCE:-}" ]; then
+      CUSTOM_OH_MY_ZSH_THEME_SOURCE="./oh-my-zsh/themes/my_setup.zsh-theme"
     fi
     install_custom_oh_my_zsh
   fi

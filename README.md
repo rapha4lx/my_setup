@@ -38,6 +38,7 @@ Optional variables:
 - `CONFIGURE_ZSHRC`: Configure `.zshrc` PATH and `EDITOR`. Defaults to `yes`.
 - `SET_ZSH_DEFAULT`: Set `zsh` as the default shell. Defaults to `yes`.
 - `CUSTOM_OH_MY_ZSH_SOURCE`: Source file or URL for the custom Oh My Zsh file. Defaults to this repo's raw `oh-my-zsh/my_setup.zsh`.
+- `CUSTOM_OH_MY_ZSH_THEME_SOURCE`: Source file or URL for the custom Oh My Zsh theme. Defaults to this repo's raw `oh-my-zsh/themes/my_setup.zsh-theme`.
 - `LAZYDOCKER_DIR`: LazyDocker install destination on Linux. Defaults to `$HOME/.local/bin`.
 - `OMO_CLAUDE`: Claude subscription mode for Oh My OpenAgent. Use `no`, `yes`, or `max20`. Defaults to `no`.
 - `OMO_OPENAI`: Enable OpenAI/ChatGPT subscription setup for Oh My OpenAgent. Defaults to `no`.
