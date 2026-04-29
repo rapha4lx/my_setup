@@ -10,8 +10,30 @@ Replace the URL with this repository's raw `install.sh` URL after pushing it to 
 curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | sh
 ```
 
+The installer opens a terminal menu when a TTY is available. To run with defaults and skip the menu:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | SETUP_MENU=never sh
+```
+
+Example disabling Docker:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | SETUP_MENU=never INSTALL_DOCKER=no sh
+```
+
 Optional variables:
 
+- `SETUP_MENU`: Set to `never` to skip the terminal menu. Defaults to `auto`.
+- `INSTALL_BASE`: Install base packages. Defaults to `yes`.
+- `INSTALL_DOCKER`: Install Docker. Defaults to `yes`.
+- `INSTALL_LAZYDOCKER`: Install LazyDocker. Defaults to `yes`.
+- `INSTALL_LAZYVIM`: Install LazyVim starter. Defaults to `yes`.
+- `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
+- `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
+- `INSTALL_OH_MY_ZSH`: Install Oh My Zsh. Defaults to `yes`.
+- `CONFIGURE_ZSHRC`: Configure `.zshrc` PATH and `EDITOR`. Defaults to `yes`.
+- `SET_ZSH_DEFAULT`: Set `zsh` as the default shell. Defaults to `yes`.
 - `LAZYDOCKER_DIR`: LazyDocker install destination on Linux. Defaults to `$HOME/.local/bin`.
 - `OMO_CLAUDE`: Claude subscription mode for Oh My OpenAgent. Use `no`, `yes`, or `max20`. Defaults to `no`.
 - `OMO_OPENAI`: Enable OpenAI/ChatGPT subscription setup for Oh My OpenAgent. Defaults to `no`.

@@ -18,6 +18,71 @@ has() {
   command -v "$1" >/dev/null 2>&1
 }
 
+is_yes() {
+  case "$1" in
+    y | Y | yes | YES | Yes | true | TRUE | True | 1) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+can_prompt() {
+  [ "${SETUP_MENU:-auto}" != "never" ] && [ -r /dev/tty ] && [ -w /dev/tty ]
+}
+
+ask_install() {
+  label="$1"
+  current="$2"
+
+  if is_yes "$current"; then
+    default="Y"
+    prompt="[Y/n]"
+  else
+    default="N"
+    prompt="[y/N]"
+  fi
+
+  printf 'Install %s? %s ' "$label" "$prompt" >/dev/tty
+  IFS= read -r answer </dev/tty || answer=""
+
+  if [ -z "$answer" ]; then
+    answer="$default"
+  fi
+
+  if is_yes "$answer"; then
+    printf '%s\n' "yes"
+  else
+    printf '%s\n' "no"
+  fi
+}
+
+configure_menu() {
+  INSTALL_BASE="${INSTALL_BASE:-yes}"
+  INSTALL_DOCKER="${INSTALL_DOCKER:-yes}"
+  INSTALL_LAZYDOCKER="${INSTALL_LAZYDOCKER:-yes}"
+  INSTALL_LAZYVIM="${INSTALL_LAZYVIM:-yes}"
+  INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
+  INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
+  INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
+  CONFIGURE_ZSHRC="${CONFIGURE_ZSHRC:-yes}"
+  SET_ZSH_DEFAULT="${SET_ZSH_DEFAULT:-yes}"
+
+  if ! can_prompt; then
+    return
+  fi
+
+  printf '\n%s\n' "Select what to install/configure:" >/dev/tty
+  INSTALL_BASE="$(ask_install "base packages" "$INSTALL_BASE")"
+  INSTALL_DOCKER="$(ask_install "Docker" "$INSTALL_DOCKER")"
+  INSTALL_LAZYDOCKER="$(ask_install "LazyDocker" "$INSTALL_LAZYDOCKER")"
+  INSTALL_LAZYVIM="$(ask_install "LazyVim" "$INSTALL_LAZYVIM")"
+  INSTALL_OPENCODE="$(ask_install "OpenCode" "$INSTALL_OPENCODE")"
+  INSTALL_OH_MY_OPENAGENT="$(ask_install "Oh My OpenAgent" "$INSTALL_OH_MY_OPENAGENT")"
+  INSTALL_OH_MY_ZSH="$(ask_install "Oh My Zsh" "$INSTALL_OH_MY_ZSH")"
+  CONFIGURE_ZSHRC="$(ask_install ".zshrc PATH and EDITOR setup" "$CONFIGURE_ZSHRC")"
+  SET_ZSH_DEFAULT="$(ask_install "zsh as default shell" "$SET_ZSH_DEFAULT")"
+  printf '\n' >/dev/tty
+}
+
 run_as_root() {
   if [ "$(id -u)" -eq 0 ]; then
     "$@"
@@ -307,17 +372,36 @@ set_default_shell() {
 
 main() {
   prepend_user_bins_to_path
+  configure_menu
 
-  log "Installing required packages"
-  install_packages
-  install_docker
-  install_lazydocker
-  install_lazyvim
-  install_opencode
-  install_oh_my_openagent
-  install_oh_my_zsh
-  configure_zshrc
-  set_default_shell
+  if is_yes "$INSTALL_BASE"; then
+    log "Installing required packages"
+    install_packages
+  fi
+  if is_yes "$INSTALL_DOCKER"; then
+    install_docker
+  fi
+  if is_yes "$INSTALL_LAZYDOCKER"; then
+    install_lazydocker
+  fi
+  if is_yes "$INSTALL_LAZYVIM"; then
+    install_lazyvim
+  fi
+  if is_yes "$INSTALL_OPENCODE"; then
+    install_opencode
+  fi
+  if is_yes "$INSTALL_OH_MY_OPENAGENT"; then
+    install_oh_my_openagent
+  fi
+  if is_yes "$INSTALL_OH_MY_ZSH"; then
+    install_oh_my_zsh
+  fi
+  if is_yes "$CONFIGURE_ZSHRC"; then
+    configure_zshrc
+  fi
+  if is_yes "$SET_ZSH_DEFAULT"; then
+    set_default_shell
+  fi
 
   log "Done. Open a new terminal or run: exec zsh"
 }
