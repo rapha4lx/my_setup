@@ -461,6 +461,9 @@ export EDITOR="nvim"
 ZSH_THEME="my_setup"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
+if [ -f "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh" ]; then
+  source "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh"
+fi
 EOF
   elif ! grep -q 'oh-my-zsh.sh' "$zshrc"; then
     log "Adding Oh My Zsh to existing $zshrc"
@@ -472,6 +475,9 @@ export EDITOR="nvim"
 ZSH_THEME="my_setup"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
+if [ -f "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh" ]; then
+  source "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh"
+fi
 EOF
   else
     log "$zshrc already loads Oh My Zsh"
@@ -502,6 +508,16 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 ZSH_THEME="my_setup"
+EOF
+  fi
+
+  if ! grep -q 'my_setup.zsh' "$zshrc"; then
+    log "Adding custom Oh My Zsh file autoload to $zshrc"
+    cat >>"$zshrc" <<'EOF'
+
+if [ -f "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh" ]; then
+  source "${ZSH_CUSTOM:-$ZSH/custom}/my_setup.zsh"
+fi
 EOF
   fi
 }
