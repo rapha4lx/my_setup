@@ -43,6 +43,7 @@ configure_menu() {
   INSTALL_BASE="${INSTALL_BASE:-yes}"
   INSTALL_DOCKER="${INSTALL_DOCKER:-yes}"
   INSTALL_LAZYDOCKER="${INSTALL_LAZYDOCKER:-yes}"
+  INSTALL_NEOVIM="${INSTALL_NEOVIM:-yes}"
   INSTALL_LAZYVIM="${INSTALL_LAZYVIM:-yes}"
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
@@ -60,7 +61,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 10
+  printf '%s\n' 11
 }
 
 menu_label() {
@@ -68,13 +69,14 @@ menu_label() {
     1) printf '%s\n' "Base packages" ;;
     2) printf '%s\n' "Docker" ;;
     3) printf '%s\n' "LazyDocker" ;;
-    4) printf '%s\n' "LazyVim" ;;
-    5) printf '%s\n' "OpenCode" ;;
-    6) printf '%s\n' "Oh My OpenAgent" ;;
-    7) printf '%s\n' "Oh My Zsh" ;;
-    8) printf '%s\n' "custom Oh My Zsh file" ;;
-    9) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    10) printf '%s\n' "zsh as default shell" ;;
+    4) printf '%s\n' "Neovim" ;;
+    5) printf '%s\n' "LazyVim" ;;
+    6) printf '%s\n' "OpenCode" ;;
+    7) printf '%s\n' "Oh My OpenAgent" ;;
+    8) printf '%s\n' "Oh My Zsh" ;;
+    9) printf '%s\n' "custom Oh My Zsh file" ;;
+    10) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    11) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -83,13 +85,14 @@ menu_value() {
     1) printf '%s\n' "$INSTALL_BASE" ;;
     2) printf '%s\n' "$INSTALL_DOCKER" ;;
     3) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
-    4) printf '%s\n' "$INSTALL_LAZYVIM" ;;
-    5) printf '%s\n' "$INSTALL_OPENCODE" ;;
-    6) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    7) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    8) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    9) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    10) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    4) printf '%s\n' "$INSTALL_NEOVIM" ;;
+    5) printf '%s\n' "$INSTALL_LAZYVIM" ;;
+    6) printf '%s\n' "$INSTALL_OPENCODE" ;;
+    7) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    8) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    9) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    10) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    11) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -98,13 +101,14 @@ menu_set() {
     1) INSTALL_BASE="$2" ;;
     2) INSTALL_DOCKER="$2" ;;
     3) INSTALL_LAZYDOCKER="$2" ;;
-    4) INSTALL_LAZYVIM="$2" ;;
-    5) INSTALL_OPENCODE="$2" ;;
-    6) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    7) INSTALL_OH_MY_ZSH="$2" ;;
-    8) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    9) CONFIGURE_ZSHRC="$2" ;;
-    10) SET_ZSH_DEFAULT="$2" ;;
+    4) INSTALL_NEOVIM="$2" ;;
+    5) INSTALL_LAZYVIM="$2" ;;
+    6) INSTALL_OPENCODE="$2" ;;
+    7) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    8) INSTALL_OH_MY_ZSH="$2" ;;
+    9) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    10) CONFIGURE_ZSHRC="$2" ;;
+    11) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -325,6 +329,33 @@ install_lazydocker() {
       warn "Automatic LazyDocker install is only configured for Linux or Homebrew. Install LazyDocker manually."
       ;;
   esac
+}
+
+install_neovim() {
+  if has nvim; then
+    log "Neovim already installed"
+    return
+  fi
+
+  log "Installing Neovim"
+  if has apt-get; then
+    run_as_root apt-get update
+    run_as_root apt-get install -y neovim
+  elif has dnf; then
+    run_as_root dnf install -y neovim
+  elif has yum; then
+    run_as_root yum install -y neovim
+  elif has pacman; then
+    run_as_root pacman -Sy --noconfirm --needed neovim
+  elif has apk; then
+    run_as_root apk add --no-cache neovim
+  elif has zypper; then
+    run_as_root zypper --non-interactive install neovim
+  elif has brew; then
+    brew install neovim
+  else
+    warn "No supported package manager found for Neovim. Install nvim manually."
+  fi
 }
 
 install_lazyvim() {
@@ -564,6 +595,9 @@ main() {
   fi
   if is_yes "$INSTALL_LAZYDOCKER"; then
     install_lazydocker
+  fi
+  if is_yes "$INSTALL_NEOVIM"; then
+    install_neovim
   fi
   if is_yes "$INSTALL_LAZYVIM"; then
     install_lazyvim

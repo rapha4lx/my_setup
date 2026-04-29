@@ -30,6 +30,7 @@ Optional variables:
 - `INSTALL_BASE`: Install base packages. Defaults to `yes`.
 - `INSTALL_DOCKER`: Install Docker. Defaults to `yes`.
 - `INSTALL_LAZYDOCKER`: Install LazyDocker. Defaults to `yes`.
+- `INSTALL_NEOVIM`: Install Neovim. Defaults to `yes`.
 - `INSTALL_LAZYVIM`: Install LazyVim starter. Defaults to `yes`.
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
@@ -55,13 +56,14 @@ Install order:
 1. Base packages, including `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, `tar`, `neovim`, `ripgrep`, `fd`, and a C compiler
 2. Docker
 3. LazyDocker
-4. LazyVim starter
-5. OpenCode
-6. Bun / `bunx`
-7. Oh My OpenAgent
-8. Oh My Zsh
-9. Custom Oh My Zsh file
-10. `.zshrc` PATH and `EDITOR` setup
-11. Default shell change to `zsh`
+4. Neovim
+5. LazyVim starter
+6. OpenCode
+7. Bun / `bunx`
+8. Oh My OpenAgent
+9. Oh My Zsh
+10. Custom Oh My Zsh file
+11. `.zshrc` PATH and `EDITOR` setup
+12. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.
