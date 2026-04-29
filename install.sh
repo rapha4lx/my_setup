@@ -149,6 +149,11 @@ install_lazydocker() {
 install_lazyvim() {
   nvim_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 
+  if ! has nvim; then
+    warn "Neovim is not available; skipping LazyVim starter clone"
+    return
+  fi
+
   if [ -e "$nvim_config_dir" ]; then
     log "Neovim config already exists at $nvim_config_dir; skipping LazyVim starter clone"
     return
