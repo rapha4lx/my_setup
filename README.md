@@ -33,6 +33,7 @@ Optional variables:
 - `INSTALL_NEOVIM`: Install Neovim. Defaults to `yes`.
 - `NEOVIM_MIN_VERSION`: Minimum Neovim version required for LazyVim. Defaults to `0.11.2`.
 - `INSTALL_LAZYVIM`: Install LazyVim starter. Defaults to `yes`.
+- `INSTALL_TREE_SITTER_CLI`: Install `tree-sitter` CLI for LazyVim/nvim-treesitter. Defaults to `yes`.
 - `UPDATE_LAZYVIM`: Run a headless LazyVim plugin sync. Defaults to `yes`.
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
@@ -60,13 +61,14 @@ Install order:
 3. LazyDocker
 4. Neovim
 5. LazyVim starter
-6. LazyVim plugin update/sync
-7. OpenCode
-8. Bun / `bunx`
-9. Oh My OpenAgent
-10. Oh My Zsh
-11. Custom Oh My Zsh file
-12. `.zshrc` PATH and `EDITOR` setup
-13. Default shell change to `zsh`
+6. `tree-sitter` CLI
+7. LazyVim plugin update/sync
+8. OpenCode
+9. Bun / `bunx`
+10. Oh My OpenAgent
+11. Oh My Zsh
+12. Custom Oh My Zsh file
+13. `.zshrc` PATH and `EDITOR` setup
+14. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.
