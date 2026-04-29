@@ -14,6 +14,14 @@ die() {
   exit 1
 }
 
+cleanup_and_exit() {
+  if [ -n "${MENU_TTY_STATE:-}" ]; then
+    stty "$MENU_TTY_STATE" </dev/tty 2>/dev/null || true
+  fi
+  printf '\n%s\n' "Interrupted. Exiting." >&2
+  exit 130
+}
+
 has() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -133,9 +141,8 @@ draw_checkbox_menu() {
 }
 
 read_menu_key() {
-  old_tty="$(stty -g </dev/tty)"
+  MENU_TTY_STATE="$(stty -g </dev/tty)"
   esc="$(printf '\033')"
-  trap 'stty "$old_tty" </dev/tty; exit 130' INT TERM
   stty raw -echo </dev/tty
   key="$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
 
@@ -144,8 +151,8 @@ read_menu_key() {
     key="$key$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
   fi
 
-  stty "$old_tty" </dev/tty
-  trap - INT TERM
+  stty "$MENU_TTY_STATE" </dev/tty
+  MENU_TTY_STATE=""
   printf '%s' "$key"
 }
 
@@ -470,6 +477,8 @@ set_default_shell() {
 }
 
 main() {
+  trap cleanup_and_exit INT TERM
+
   prepend_user_bins_to_path
   configure_menu
 
