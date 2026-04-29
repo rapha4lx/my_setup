@@ -29,7 +29,7 @@ run_as_root() {
 }
 
 install_packages() {
-  packages="zsh curl git bash ca-certificates"
+  packages="zsh curl git bash ca-certificates unzip tar"
 
   if has apt-get; then
     run_as_root apt-get update
@@ -53,6 +53,10 @@ install_packages() {
 
 current_user_name() {
   printf '%s\n' "${USER:-$(id -un 2>/dev/null || printf '')}"
+}
+
+prepend_user_bins_to_path() {
+  export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 }
 
 add_user_to_docker_group() {
@@ -153,11 +157,46 @@ install_opencode() {
     Linux | Darwin)
       log "Installing OpenCode"
       curl -fsSL https://opencode.ai/install | bash
+      prepend_user_bins_to_path
       ;;
     *)
       warn "Automatic OpenCode install is only configured for Linux, macOS, or Homebrew. Install OpenCode manually."
       ;;
   esac
+}
+
+install_bun() {
+  if has bun && has bunx; then
+    log "Bun already installed"
+    return
+  fi
+
+  log "Installing Bun"
+  curl -fsSL https://bun.sh/install | bash
+  prepend_user_bins_to_path
+}
+
+install_oh_my_openagent() {
+  if ! has opencode; then
+    warn "OpenCode is not available; skipping Oh My OpenAgent install"
+    return
+  fi
+
+  install_bun
+
+  log "Installing Oh My OpenAgent"
+  bunx oh-my-opencode install \
+    --no-tui \
+    --claude="${OMO_CLAUDE:-no}" \
+    --openai="${OMO_OPENAI:-no}" \
+    --gemini="${OMO_GEMINI:-no}" \
+    --copilot="${OMO_COPILOT:-no}" \
+    --opencode-zen="${OMO_OPENCODE_ZEN:-no}" \
+    --zai-coding-plan="${OMO_ZAI_CODING_PLAN:-no}" \
+    --opencode-go="${OMO_OPENCODE_GO:-no}" \
+    --kimi-for-coding="${OMO_KIMI_FOR_CODING:-no}" \
+    --vercel-ai-gateway="${OMO_VERCEL_AI_GATEWAY:-no}" \
+    --skip-auth
 }
 
 install_oh_my_zsh() {
@@ -177,7 +216,7 @@ configure_zshrc() {
     log "Creating $zshrc"
     cat >"$zshrc" <<'EOF'
 export ZSH="$HOME/.oh-my-zsh"
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 ZSH_THEME="robbyrussell"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
@@ -187,7 +226,7 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export ZSH="$HOME/.oh-my-zsh"
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 ZSH_THEME="robbyrussell"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
@@ -196,11 +235,11 @@ EOF
     log "$zshrc already loads Oh My Zsh"
   fi
 
-  if ! grep -q 'HOME/.local/bin' "$zshrc"; then
-    log "Adding $HOME/.local/bin to PATH in $zshrc"
+  if ! grep -q 'HOME/.opencode/bin' "$zshrc" || ! grep -q 'HOME/.bun/bin' "$zshrc"; then
+    log "Adding user bin directories to PATH in $zshrc"
     cat >>"$zshrc" <<'EOF'
 
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 EOF
   fi
 }
@@ -233,11 +272,14 @@ set_default_shell() {
 }
 
 main() {
+  prepend_user_bins_to_path
+
   log "Installing required packages"
   install_packages
   install_docker
   install_lazydocker
   install_opencode
+  install_oh_my_openagent
   install_oh_my_zsh
   configure_zshrc
   set_default_shell
