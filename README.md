@@ -34,8 +34,10 @@ Optional variables:
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
 - `INSTALL_OH_MY_ZSH`: Install Oh My Zsh. Defaults to `yes`.
+- `INSTALL_CUSTOM_OH_MY_ZSH`: Install the custom Oh My Zsh file. Defaults to `yes`.
 - `CONFIGURE_ZSHRC`: Configure `.zshrc` PATH and `EDITOR`. Defaults to `yes`.
 - `SET_ZSH_DEFAULT`: Set `zsh` as the default shell. Defaults to `yes`.
+- `CUSTOM_OH_MY_ZSH_SOURCE`: Source file or URL for the custom Oh My Zsh file. Defaults to this repo's raw `oh-my-zsh/my_setup.zsh`.
 - `LAZYDOCKER_DIR`: LazyDocker install destination on Linux. Defaults to `$HOME/.local/bin`.
 - `OMO_CLAUDE`: Claude subscription mode for Oh My OpenAgent. Use `no`, `yes`, or `max20`. Defaults to `no`.
 - `OMO_OPENAI`: Enable OpenAI/ChatGPT subscription setup for Oh My OpenAgent. Defaults to `no`.
@@ -57,6 +59,8 @@ Install order:
 6. Bun / `bunx`
 7. Oh My OpenAgent
 8. Oh My Zsh
-9. Default shell change to `zsh`
+9. Custom Oh My Zsh file
+10. `.zshrc` PATH and `EDITOR` setup
+11. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.

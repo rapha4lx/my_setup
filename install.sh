@@ -47,6 +47,7 @@ configure_menu() {
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
   INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
+  INSTALL_CUSTOM_OH_MY_ZSH="${INSTALL_CUSTOM_OH_MY_ZSH:-yes}"
   CONFIGURE_ZSHRC="${CONFIGURE_ZSHRC:-yes}"
   SET_ZSH_DEFAULT="${SET_ZSH_DEFAULT:-yes}"
 
@@ -59,7 +60,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 9
+  printf '%s\n' 10
 }
 
 menu_label() {
@@ -71,8 +72,9 @@ menu_label() {
     5) printf '%s\n' "OpenCode" ;;
     6) printf '%s\n' "Oh My OpenAgent" ;;
     7) printf '%s\n' "Oh My Zsh" ;;
-    8) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    9) printf '%s\n' "zsh as default shell" ;;
+    8) printf '%s\n' "custom Oh My Zsh file" ;;
+    9) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    10) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -85,8 +87,9 @@ menu_value() {
     5) printf '%s\n' "$INSTALL_OPENCODE" ;;
     6) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
     7) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    8) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    9) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    8) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    9) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    10) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -99,8 +102,9 @@ menu_set() {
     5) INSTALL_OPENCODE="$2" ;;
     6) INSTALL_OH_MY_OPENAGENT="$2" ;;
     7) INSTALL_OH_MY_ZSH="$2" ;;
-    8) CONFIGURE_ZSHRC="$2" ;;
-    9) SET_ZSH_DEFAULT="$2" ;;
+    8) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    9) CONFIGURE_ZSHRC="$2" ;;
+    10) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -410,6 +414,27 @@ install_oh_my_zsh() {
   RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
+install_custom_oh_my_zsh() {
+  zsh_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+  custom_target="$zsh_custom_dir/my_setup.zsh"
+  custom_source="${CUSTOM_OH_MY_ZSH_SOURCE:-https://raw.githubusercontent.com/rapha4lx/my_setup/main/oh-my-zsh/my_setup.zsh}"
+
+  if [ ! -d "$zsh_custom_dir" ]; then
+    warn "Oh My Zsh custom directory not found at $zsh_custom_dir; skipping custom file"
+    return
+  fi
+
+  log "Installing custom Oh My Zsh file"
+  case "$custom_source" in
+    http://* | https://*)
+      curl -fsSL "$custom_source" -o "$custom_target"
+      ;;
+    *)
+      cp "$custom_source" "$custom_target"
+      ;;
+  esac
+}
+
 configure_zshrc() {
   zshrc="$HOME/.zshrc"
 
@@ -509,6 +534,12 @@ main() {
   fi
   if is_yes "$INSTALL_OH_MY_ZSH"; then
     install_oh_my_zsh
+  fi
+  if is_yes "$INSTALL_CUSTOM_OH_MY_ZSH"; then
+    if [ -f "./oh-my-zsh/my_setup.zsh" ] && [ -z "${CUSTOM_OH_MY_ZSH_SOURCE:-}" ]; then
+      CUSTOM_OH_MY_ZSH_SOURCE="./oh-my-zsh/my_setup.zsh"
+    fi
+    install_custom_oh_my_zsh
   fi
   if is_yes "$CONFIGURE_ZSHRC"; then
     configure_zshrc
