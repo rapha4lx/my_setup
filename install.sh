@@ -137,6 +137,29 @@ install_lazydocker() {
   esac
 }
 
+install_opencode() {
+  if has opencode; then
+    log "OpenCode already installed"
+    return
+  fi
+
+  if has brew; then
+    log "Installing OpenCode with Homebrew"
+    brew install anomalyco/tap/opencode
+    return
+  fi
+
+  case "$(uname -s)" in
+    Linux | Darwin)
+      log "Installing OpenCode"
+      curl -fsSL https://opencode.ai/install | bash
+      ;;
+    *)
+      warn "Automatic OpenCode install is only configured for Linux, macOS, or Homebrew. Install OpenCode manually."
+      ;;
+  esac
+}
+
 install_oh_my_zsh() {
   if [ -d "$HOME/.oh-my-zsh" ]; then
     log "Oh My Zsh already installed"
@@ -214,6 +237,7 @@ main() {
   install_packages
   install_docker
   install_lazydocker
+  install_opencode
   install_oh_my_zsh
   configure_zshrc
   set_default_shell
