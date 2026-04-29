@@ -236,6 +236,7 @@ configure_zshrc() {
     cat >"$zshrc" <<'EOF'
 export ZSH="$HOME/.oh-my-zsh"
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
+export EDITOR="nvim"
 ZSH_THEME="robbyrussell"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
@@ -246,6 +247,7 @@ EOF
 
 export ZSH="$HOME/.oh-my-zsh"
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
+export EDITOR="nvim"
 ZSH_THEME="robbyrussell"
 plugins=(git)
 source "$ZSH/oh-my-zsh.sh"
@@ -259,6 +261,14 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
+EOF
+  fi
+
+  if ! grep -q '^export EDITOR=' "$zshrc"; then
+    log "Setting EDITOR to nvim in $zshrc"
+    cat >>"$zshrc" <<'EOF'
+
+export EDITOR="nvim"
 EOF
   fi
 }
