@@ -45,6 +45,7 @@ configure_menu() {
   INSTALL_LAZYDOCKER="${INSTALL_LAZYDOCKER:-yes}"
   INSTALL_NEOVIM="${INSTALL_NEOVIM:-yes}"
   INSTALL_LAZYVIM="${INSTALL_LAZYVIM:-yes}"
+  UPDATE_LAZYVIM="${UPDATE_LAZYVIM:-yes}"
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
   INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
@@ -61,7 +62,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 11
+  printf '%s\n' 12
 }
 
 menu_label() {
@@ -71,12 +72,13 @@ menu_label() {
     3) printf '%s\n' "LazyDocker" ;;
     4) printf '%s\n' "Neovim" ;;
     5) printf '%s\n' "LazyVim" ;;
-    6) printf '%s\n' "OpenCode" ;;
-    7) printf '%s\n' "Oh My OpenAgent" ;;
-    8) printf '%s\n' "Oh My Zsh" ;;
-    9) printf '%s\n' "custom Oh My Zsh file" ;;
-    10) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    11) printf '%s\n' "zsh as default shell" ;;
+    6) printf '%s\n' "LazyVim update/sync" ;;
+    7) printf '%s\n' "OpenCode" ;;
+    8) printf '%s\n' "Oh My OpenAgent" ;;
+    9) printf '%s\n' "Oh My Zsh" ;;
+    10) printf '%s\n' "custom Oh My Zsh file" ;;
+    11) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    12) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -87,12 +89,13 @@ menu_value() {
     3) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
     4) printf '%s\n' "$INSTALL_NEOVIM" ;;
     5) printf '%s\n' "$INSTALL_LAZYVIM" ;;
-    6) printf '%s\n' "$INSTALL_OPENCODE" ;;
-    7) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    8) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    9) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    10) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    11) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    6) printf '%s\n' "$UPDATE_LAZYVIM" ;;
+    7) printf '%s\n' "$INSTALL_OPENCODE" ;;
+    8) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    9) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    10) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    11) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    12) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -103,12 +106,13 @@ menu_set() {
     3) INSTALL_LAZYDOCKER="$2" ;;
     4) INSTALL_NEOVIM="$2" ;;
     5) INSTALL_LAZYVIM="$2" ;;
-    6) INSTALL_OPENCODE="$2" ;;
-    7) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    8) INSTALL_OH_MY_ZSH="$2" ;;
-    9) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    10) CONFIGURE_ZSHRC="$2" ;;
-    11) SET_ZSH_DEFAULT="$2" ;;
+    6) UPDATE_LAZYVIM="$2" ;;
+    7) INSTALL_OPENCODE="$2" ;;
+    8) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    9) INSTALL_OH_MY_ZSH="$2" ;;
+    10) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    11) CONFIGURE_ZSHRC="$2" ;;
+    12) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -466,6 +470,25 @@ install_lazyvim() {
   rm -rf "$nvim_config_dir/.git"
 }
 
+update_lazyvim() {
+  nvim_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+  required_nvim_version="${NEOVIM_MIN_VERSION:-0.11.2}"
+  current_nvim_version="$(nvim_version || true)"
+
+  if [ -z "$current_nvim_version" ] || ! version_ge "$current_nvim_version" "$required_nvim_version"; then
+    warn "Neovim $required_nvim_version or newer is required; skipping LazyVim update"
+    return
+  fi
+
+  if [ ! -f "$nvim_config_dir/init.lua" ]; then
+    warn "LazyVim config not found at $nvim_config_dir; skipping LazyVim update"
+    return
+  fi
+
+  log "Updating LazyVim plugins"
+  nvim --headless -u "$nvim_config_dir/init.lua" "+Lazy! sync" +qa
+}
+
 install_opencode() {
   if has opencode; then
     log "OpenCode already installed"
@@ -690,6 +713,9 @@ main() {
   fi
   if is_yes "$INSTALL_LAZYVIM"; then
     install_lazyvim
+  fi
+  if is_yes "$UPDATE_LAZYVIM"; then
+    update_lazyvim
   fi
   if is_yes "$INSTALL_OPENCODE"; then
     install_opencode
