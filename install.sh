@@ -34,7 +34,9 @@ is_yes() {
 }
 
 can_prompt() {
-  [ "${SETUP_MENU:-auto}" != "never" ] && [ -r /dev/tty ] && [ -w /dev/tty ]
+  [ "${SETUP_MENU:-auto}" != "never" ] &&
+    ( : </dev/tty ) >/dev/null 2>&1 &&
+    ( : >/dev/tty ) >/dev/null 2>&1
 }
 
 configure_menu() {
@@ -143,15 +145,16 @@ draw_checkbox_menu() {
 read_menu_key() {
   MENU_TTY_STATE="$(stty -g </dev/tty)"
   esc="$(printf '\033')"
-  stty raw -echo </dev/tty
+  stty raw -echo min 1 time 0 </dev/tty
   key="$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
 
   if [ "$key" = "$esc" ]; then
+    stty raw -echo min 0 time 1 </dev/tty
     key="$key$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
     key="$key$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
   fi
 
-  stty "$MENU_TTY_STATE" </dev/tty
+  stty "$MENU_TTY_STATE" </dev/tty 2>/dev/null || true
   MENU_TTY_STATE=""
   printf '%s' "$key"
 }
@@ -165,6 +168,9 @@ checkbox_menu() {
     key="$(read_menu_key)"
 
     case "$key" in
+      "$(printf '\003')")
+        cleanup_and_exit
+        ;;
       j | s | "$(printf '\033[B')")
         if [ "$selected" -lt "$count" ]; then
           selected=$((selected + 1))
