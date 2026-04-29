@@ -30,11 +30,10 @@ Optional variables:
 - `INSTALL_BASE`: Install base packages. Defaults to `yes`.
 - `INSTALL_DOCKER`: Install Docker. Defaults to `yes`.
 - `INSTALL_LAZYDOCKER`: Install LazyDocker. Defaults to `yes`.
-- `INSTALL_NEOVIM`: Install Neovim. Defaults to `yes`.
+- `INSTALL_NODE20`: Install NVM and Node.js 20. Defaults to `yes`.
+- `NODE_VERSION`: Node.js major/version installed through NVM. Defaults to `20`.
+- `INSTALL_LAZYVIM_STACK`: Install Neovim, LazyVim starter, `tree-sitter` CLI, and run LazyVim sync. Defaults to `yes`.
 - `NEOVIM_MIN_VERSION`: Minimum Neovim version required for LazyVim. Defaults to `0.11.2`.
-- `INSTALL_LAZYVIM`: Install LazyVim starter. Defaults to `yes`.
-- `INSTALL_TREE_SITTER_CLI`: Install `tree-sitter` CLI for LazyVim/nvim-treesitter. Defaults to `yes`.
-- `UPDATE_LAZYVIM`: Run a headless LazyVim plugin sync. Defaults to `yes`.
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
 - `INSTALL_OH_MY_ZSH`: Install Oh My Zsh. Defaults to `yes`.
@@ -56,19 +55,17 @@ Optional variables:
 
 Install order:
 
-1. Base packages, including `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, `tar`, `neovim`, `ripgrep`, `fd`, and a C compiler
+1. Base packages, including `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, `tar`, `neovim`, `ripgrep`, `fd`, `npm`/`node`, and a C compiler
 2. Docker
 3. LazyDocker
-4. Neovim
-5. LazyVim starter
-6. `tree-sitter` CLI
-7. LazyVim plugin update/sync
-8. OpenCode
-9. Bun / `bunx`
-10. Oh My OpenAgent
-11. Oh My Zsh
-12. Custom Oh My Zsh file
-13. `.zshrc` PATH and `EDITOR` setup
-14. Default shell change to `zsh`
+4. NVM and Node.js 20
+5. LazyVim stack: Neovim, LazyVim starter, `tree-sitter` CLI, and plugin sync
+6. OpenCode
+7. Bun / `bunx`
+8. Oh My OpenAgent
+9. Oh My Zsh
+10. Custom Oh My Zsh file
+11. `.zshrc` PATH and `EDITOR` setup
+12. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.

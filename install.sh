@@ -43,10 +43,8 @@ configure_menu() {
   INSTALL_BASE="${INSTALL_BASE:-yes}"
   INSTALL_DOCKER="${INSTALL_DOCKER:-yes}"
   INSTALL_LAZYDOCKER="${INSTALL_LAZYDOCKER:-yes}"
-  INSTALL_NEOVIM="${INSTALL_NEOVIM:-yes}"
-  INSTALL_LAZYVIM="${INSTALL_LAZYVIM:-yes}"
-  INSTALL_TREE_SITTER_CLI="${INSTALL_TREE_SITTER_CLI:-yes}"
-  UPDATE_LAZYVIM="${UPDATE_LAZYVIM:-yes}"
+  INSTALL_NODE20="${INSTALL_NODE20:-yes}"
+  INSTALL_LAZYVIM_STACK="${INSTALL_LAZYVIM_STACK:-yes}"
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
   INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
@@ -63,7 +61,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 13
+  printf '%s\n' 11
 }
 
 menu_label() {
@@ -71,16 +69,14 @@ menu_label() {
     1) printf '%s\n' "Base packages" ;;
     2) printf '%s\n' "Docker" ;;
     3) printf '%s\n' "LazyDocker" ;;
-    4) printf '%s\n' "Neovim" ;;
-    5) printf '%s\n' "LazyVim" ;;
-    6) printf '%s\n' "tree-sitter CLI" ;;
-    7) printf '%s\n' "LazyVim update/sync" ;;
-    8) printf '%s\n' "OpenCode" ;;
-    9) printf '%s\n' "Oh My OpenAgent" ;;
-    10) printf '%s\n' "Oh My Zsh" ;;
-    11) printf '%s\n' "custom Oh My Zsh file" ;;
-    12) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    13) printf '%s\n' "zsh as default shell" ;;
+    4) printf '%s\n' "NVM + Node.js 20" ;;
+    5) printf '%s\n' "LazyVim stack" ;;
+    6) printf '%s\n' "OpenCode" ;;
+    7) printf '%s\n' "Oh My OpenAgent" ;;
+    8) printf '%s\n' "Oh My Zsh" ;;
+    9) printf '%s\n' "custom Oh My Zsh file" ;;
+    10) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    11) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -89,16 +85,14 @@ menu_value() {
     1) printf '%s\n' "$INSTALL_BASE" ;;
     2) printf '%s\n' "$INSTALL_DOCKER" ;;
     3) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
-    4) printf '%s\n' "$INSTALL_NEOVIM" ;;
-    5) printf '%s\n' "$INSTALL_LAZYVIM" ;;
-    6) printf '%s\n' "$INSTALL_TREE_SITTER_CLI" ;;
-    7) printf '%s\n' "$UPDATE_LAZYVIM" ;;
-    8) printf '%s\n' "$INSTALL_OPENCODE" ;;
-    9) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    10) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    11) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    12) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    13) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    4) printf '%s\n' "$INSTALL_NODE20" ;;
+    5) printf '%s\n' "$INSTALL_LAZYVIM_STACK" ;;
+    6) printf '%s\n' "$INSTALL_OPENCODE" ;;
+    7) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    8) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    9) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    10) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    11) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -107,16 +101,14 @@ menu_set() {
     1) INSTALL_BASE="$2" ;;
     2) INSTALL_DOCKER="$2" ;;
     3) INSTALL_LAZYDOCKER="$2" ;;
-    4) INSTALL_NEOVIM="$2" ;;
-    5) INSTALL_LAZYVIM="$2" ;;
-    6) INSTALL_TREE_SITTER_CLI="$2" ;;
-    7) UPDATE_LAZYVIM="$2" ;;
-    8) INSTALL_OPENCODE="$2" ;;
-    9) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    10) INSTALL_OH_MY_ZSH="$2" ;;
-    11) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    12) CONFIGURE_ZSHRC="$2" ;;
-    13) SET_ZSH_DEFAULT="$2" ;;
+    4) INSTALL_NODE20="$2" ;;
+    5) INSTALL_LAZYVIM_STACK="$2" ;;
+    6) INSTALL_OPENCODE="$2" ;;
+    7) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    8) INSTALL_OH_MY_ZSH="$2" ;;
+    9) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    10) CONFIGURE_ZSHRC="$2" ;;
+    11) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -257,6 +249,16 @@ prepend_user_bins_to_path() {
   export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 }
 
+load_nvm() {
+  nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+  if [ -s "$nvm_dir/nvm.sh" ]; then
+    export NVM_DIR="$nvm_dir"
+    # shellcheck disable=SC1090
+    . "$nvm_dir/nvm.sh"
+    nvm use default >/dev/null 2>&1 || true
+  fi
+}
+
 add_user_to_docker_group() {
   user_name="$(current_user_name)"
   [ -n "$user_name" ] || return
@@ -337,6 +339,27 @@ install_lazydocker() {
       warn "Automatic LazyDocker install is only configured for Linux or Homebrew. Install LazyDocker manually."
       ;;
   esac
+}
+
+install_nvm_node20() {
+  node_major="${NODE_VERSION:-20}"
+  nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+
+  if [ ! -s "$nvm_dir/nvm.sh" ]; then
+    log "Installing NVM"
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash
+  fi
+
+  load_nvm
+  if ! has nvm; then
+    warn "NVM was not loaded; skipping Node.js $node_major install"
+    return
+  fi
+
+  log "Installing Node.js $node_major with NVM"
+  nvm install "$node_major"
+  nvm alias default "$node_major"
+  nvm use default
 }
 
 nvim_version() {
@@ -482,7 +505,15 @@ install_tree_sitter_cli() {
 
   if has npm; then
     log "Installing tree-sitter CLI with npm"
-    run_as_root npm install -g tree-sitter-cli
+    npm_path="$(command -v npm)"
+    case "$npm_path" in
+      "$HOME"/.nvm/*)
+        npm install -g tree-sitter-cli
+        ;;
+      *)
+        run_as_root npm install -g tree-sitter-cli
+        ;;
+    esac
   elif has bun; then
     log "Installing tree-sitter CLI with bun"
     bun install -g tree-sitter-cli
@@ -509,6 +540,13 @@ update_lazyvim() {
   log "Updating LazyVim plugins"
   nvim --headless -u "$nvim_config_dir/init.lua" "+Lazy! sync" +qa
   nvim --headless -u "$nvim_config_dir/init.lua" "+Lazy! sync" +qa
+}
+
+install_lazyvim_stack() {
+  install_neovim
+  install_lazyvim
+  install_tree_sitter_cli
+  update_lazyvim
 }
 
 install_opencode() {
@@ -621,6 +659,9 @@ configure_zshrc() {
     log "Creating $zshrc"
     cat >"$zshrc" <<'EOF'
 export ZSH="$HOME/.oh-my-zsh"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
 ZSH_THEME="my_setup"
@@ -635,6 +676,9 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export ZSH="$HOME/.oh-my-zsh"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
 ZSH_THEME="my_setup"
@@ -653,6 +697,16 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
+EOF
+  fi
+
+  if ! grep -q 'NVM_DIR' "$zshrc"; then
+    log "Adding NVM autoload to $zshrc"
+    cat >>"$zshrc" <<'EOF'
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 EOF
   fi
 
@@ -730,17 +784,11 @@ main() {
   if is_yes "$INSTALL_LAZYDOCKER"; then
     install_lazydocker
   fi
-  if is_yes "$INSTALL_NEOVIM"; then
-    install_neovim
+  if is_yes "$INSTALL_NODE20"; then
+    install_nvm_node20
   fi
-  if is_yes "$INSTALL_LAZYVIM"; then
-    install_lazyvim
-  fi
-  if is_yes "$INSTALL_TREE_SITTER_CLI"; then
-    install_tree_sitter_cli
-  fi
-  if is_yes "$UPDATE_LAZYVIM"; then
-    update_lazyvim
+  if is_yes "$INSTALL_LAZYVIM_STACK"; then
+    install_lazyvim_stack
   fi
   if is_yes "$INSTALL_OPENCODE"; then
     install_opencode
