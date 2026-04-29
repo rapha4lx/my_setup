@@ -1,6 +1,6 @@
 # my_setup
 
-Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, OpenCode, and Oh My OpenAgent.
+Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, LazyVim, OpenCode, and Oh My OpenAgent.
 
 ## Run from curl
 
@@ -25,13 +25,14 @@ Optional variables:
 
 Install order:
 
-1. Base packages: `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, and `tar`
+1. Base packages, including `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, `tar`, `neovim`, `ripgrep`, `fd`, and a C compiler
 2. Docker
 3. LazyDocker
-4. OpenCode
-5. Bun / `bunx`
-6. Oh My OpenAgent
-7. Oh My Zsh
-8. Default shell change to `zsh`
+4. LazyVim starter
+5. OpenCode
+6. Bun / `bunx`
+7. Oh My OpenAgent
+8. Oh My Zsh
+9. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.

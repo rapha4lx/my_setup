@@ -29,22 +29,27 @@ run_as_root() {
 }
 
 install_packages() {
-  packages="zsh curl git bash ca-certificates unzip tar"
-
   if has apt-get; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd-find build-essential"
     run_as_root apt-get update
     run_as_root apt-get install -y $packages
   elif has dnf; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd-find gcc make"
     run_as_root dnf install -y $packages
   elif has yum; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd-find gcc make"
     run_as_root yum install -y $packages
   elif has pacman; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd base-devel"
     run_as_root pacman -Sy --noconfirm --needed $packages
   elif has apk; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd build-base"
     run_as_root apk add --no-cache $packages
   elif has zypper; then
+    packages="zsh curl git bash ca-certificates unzip tar neovim ripgrep fd gcc make"
     run_as_root zypper --non-interactive install $packages
   elif has brew; then
+    packages="zsh curl git bash ca-certificates unzip gnu-tar neovim ripgrep fd gcc make"
     brew install $packages
   else
     die "No supported package manager found. Install zsh, curl, and git manually, then rerun this script."
@@ -139,6 +144,20 @@ install_lazydocker() {
       warn "Automatic LazyDocker install is only configured for Linux or Homebrew. Install LazyDocker manually."
       ;;
   esac
+}
+
+install_lazyvim() {
+  nvim_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+
+  if [ -e "$nvim_config_dir" ]; then
+    log "Neovim config already exists at $nvim_config_dir; skipping LazyVim starter clone"
+    return
+  fi
+
+  log "Installing LazyVim starter"
+  mkdir -p "$(dirname "$nvim_config_dir")"
+  git clone https://github.com/LazyVim/starter "$nvim_config_dir"
+  rm -rf "$nvim_config_dir/.git"
 }
 
 install_opencode() {
@@ -278,6 +297,7 @@ main() {
   install_packages
   install_docker
   install_lazydocker
+  install_lazyvim
   install_opencode
   install_oh_my_openagent
   install_oh_my_zsh
