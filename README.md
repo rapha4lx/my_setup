@@ -10,7 +10,9 @@ Replace the URL with this repository's raw `install.sh` URL after pushing it to 
 curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | sh
 ```
 
-The installer opens a terminal menu when a TTY is available. To run with defaults and skip the menu:
+The installer opens a checkbox menu when a TTY is available. Use arrow keys, `j/k`, or `w/s` to move, Space to toggle, and Enter to start installing.
+
+To run with defaults and skip the menu:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | SETUP_MENU=never sh

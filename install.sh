@@ -29,32 +29,6 @@ can_prompt() {
   [ "${SETUP_MENU:-auto}" != "never" ] && [ -r /dev/tty ] && [ -w /dev/tty ]
 }
 
-ask_install() {
-  label="$1"
-  current="$2"
-
-  if is_yes "$current"; then
-    default="Y"
-    prompt="[Y/n]"
-  else
-    default="N"
-    prompt="[y/N]"
-  fi
-
-  printf 'Install %s? %s ' "$label" "$prompt" >/dev/tty
-  IFS= read -r answer </dev/tty || answer=""
-
-  if [ -z "$answer" ]; then
-    answer="$default"
-  fi
-
-  if is_yes "$answer"; then
-    printf '%s\n' "yes"
-  else
-    printf '%s\n' "no"
-  fi
-}
-
 configure_menu() {
   INSTALL_BASE="${INSTALL_BASE:-yes}"
   INSTALL_DOCKER="${INSTALL_DOCKER:-yes}"
@@ -70,17 +44,142 @@ configure_menu() {
     return
   fi
 
-  printf '\n%s\n' "Select what to install/configure:" >/dev/tty
-  INSTALL_BASE="$(ask_install "base packages" "$INSTALL_BASE")"
-  INSTALL_DOCKER="$(ask_install "Docker" "$INSTALL_DOCKER")"
-  INSTALL_LAZYDOCKER="$(ask_install "LazyDocker" "$INSTALL_LAZYDOCKER")"
-  INSTALL_LAZYVIM="$(ask_install "LazyVim" "$INSTALL_LAZYVIM")"
-  INSTALL_OPENCODE="$(ask_install "OpenCode" "$INSTALL_OPENCODE")"
-  INSTALL_OH_MY_OPENAGENT="$(ask_install "Oh My OpenAgent" "$INSTALL_OH_MY_OPENAGENT")"
-  INSTALL_OH_MY_ZSH="$(ask_install "Oh My Zsh" "$INSTALL_OH_MY_ZSH")"
-  CONFIGURE_ZSHRC="$(ask_install ".zshrc PATH and EDITOR setup" "$CONFIGURE_ZSHRC")"
-  SET_ZSH_DEFAULT="$(ask_install "zsh as default shell" "$SET_ZSH_DEFAULT")"
+  checkbox_menu
   printf '\n' >/dev/tty
+}
+
+menu_count() {
+  printf '%s\n' 9
+}
+
+menu_label() {
+  case "$1" in
+    1) printf '%s\n' "Base packages" ;;
+    2) printf '%s\n' "Docker" ;;
+    3) printf '%s\n' "LazyDocker" ;;
+    4) printf '%s\n' "LazyVim" ;;
+    5) printf '%s\n' "OpenCode" ;;
+    6) printf '%s\n' "Oh My OpenAgent" ;;
+    7) printf '%s\n' "Oh My Zsh" ;;
+    8) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    9) printf '%s\n' "zsh as default shell" ;;
+  esac
+}
+
+menu_value() {
+  case "$1" in
+    1) printf '%s\n' "$INSTALL_BASE" ;;
+    2) printf '%s\n' "$INSTALL_DOCKER" ;;
+    3) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
+    4) printf '%s\n' "$INSTALL_LAZYVIM" ;;
+    5) printf '%s\n' "$INSTALL_OPENCODE" ;;
+    6) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    7) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    8) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    9) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+  esac
+}
+
+menu_set() {
+  case "$1" in
+    1) INSTALL_BASE="$2" ;;
+    2) INSTALL_DOCKER="$2" ;;
+    3) INSTALL_LAZYDOCKER="$2" ;;
+    4) INSTALL_LAZYVIM="$2" ;;
+    5) INSTALL_OPENCODE="$2" ;;
+    6) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    7) INSTALL_OH_MY_ZSH="$2" ;;
+    8) CONFIGURE_ZSHRC="$2" ;;
+    9) SET_ZSH_DEFAULT="$2" ;;
+  esac
+}
+
+menu_toggle() {
+  if is_yes "$(menu_value "$1")"; then
+    menu_set "$1" "no"
+  else
+    menu_set "$1" "yes"
+  fi
+}
+
+draw_checkbox_menu() {
+  selected="$1"
+  count="$(menu_count)"
+  i=1
+
+  if has tput; then
+    tput clear >/dev/tty 2>/dev/null || printf '\033c' >/dev/tty
+  else
+    printf '\033c' >/dev/tty
+  fi
+
+  printf '%s\n' "Select what to install/configure" >/dev/tty
+  printf '%s\n\n' "Use arrows, j/k, or w/s to move, Space to toggle, Enter to install." >/dev/tty
+
+  while [ "$i" -le "$count" ]; do
+    marker=" "
+    pointer=" "
+
+    if is_yes "$(menu_value "$i")"; then
+      marker="x"
+    fi
+    if [ "$i" -eq "$selected" ]; then
+      pointer=">"
+    fi
+
+    printf '%s [%s] %s\n' "$pointer" "$marker" "$(menu_label "$i")" >/dev/tty
+    i=$((i + 1))
+  done
+}
+
+read_menu_key() {
+  old_tty="$(stty -g </dev/tty)"
+  esc="$(printf '\033')"
+  trap 'stty "$old_tty" </dev/tty; exit 130' INT TERM
+  stty raw -echo </dev/tty
+  key="$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
+
+  if [ "$key" = "$esc" ]; then
+    key="$key$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
+    key="$key$(dd bs=1 count=1 2>/dev/null </dev/tty || true)"
+  fi
+
+  stty "$old_tty" </dev/tty
+  trap - INT TERM
+  printf '%s' "$key"
+}
+
+checkbox_menu() {
+  selected=1
+  count="$(menu_count)"
+
+  while :; do
+    draw_checkbox_menu "$selected"
+    key="$(read_menu_key)"
+
+    case "$key" in
+      j | s | "$(printf '\033[B')")
+        if [ "$selected" -lt "$count" ]; then
+          selected=$((selected + 1))
+        else
+          selected=1
+        fi
+        ;;
+      k | w | "$(printf '\033[A')")
+        if [ "$selected" -gt 1 ]; then
+          selected=$((selected - 1))
+        else
+          selected="$count"
+        fi
+        ;;
+      " ")
+        menu_toggle "$selected"
+        ;;
+      "$(printf '\r')" | "$(printf '\n')" | "")
+        break
+        ;;
+    esac
+  done
 }
 
 run_as_root() {
