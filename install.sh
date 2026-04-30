@@ -659,9 +659,6 @@ configure_zshrc() {
     log "Creating $zshrc"
     cat >"$zshrc" <<'EOF'
 export ZSH="$HOME/.oh-my-zsh"
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
 ZSH_THEME="my_setup"
@@ -676,9 +673,6 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export ZSH="$HOME/.oh-my-zsh"
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
 export EDITOR="nvim"
 ZSH_THEME="my_setup"
@@ -697,16 +691,6 @@ EOF
     cat >>"$zshrc" <<'EOF'
 
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.bun/bin:$PATH"
-EOF
-  fi
-
-  if ! grep -q 'NVM_DIR' "$zshrc"; then
-    log "Adding NVM autoload to $zshrc"
-    cat >>"$zshrc" <<'EOF'
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-command -v nvm >/dev/null 2>&1 && nvm use default >/dev/null 2>&1
 EOF
   fi
 

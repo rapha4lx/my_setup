@@ -14,6 +14,15 @@ prompt_my_setup_precmd() {
     )"
     MY_SETUP_COMMAND_START=""
   fi
+
+  MY_SETUP_GIT_INFO="$(prompt_my_setup_git)"
+  if [ -z "${MY_SETUP_CONTAINER_INFO+x}" ]; then
+    MY_SETUP_CONTAINER_INFO="$(prompt_my_setup_container_info)"
+  fi
+  if [ -z "$MY_SETUP_CONTAINER_INFO" ] && [ -z "${MY_SETUP_IP_INFO+x}" ]; then
+    MY_SETUP_IP_INFO="$(prompt_my_setup_ip)"
+  fi
+  MY_SETUP_DURATION_INFO="$(prompt_my_setup_duration)"
 }
 
 prompt_my_setup_duration() {
@@ -34,20 +43,11 @@ prompt_my_setup_duration() {
   '
 }
 
-prompt_my_setup_git_status() {
-  command git diff --quiet --ignore-submodules -- 2>/dev/null &&
-    command git diff --cached --quiet --ignore-submodules -- 2>/dev/null
-}
-
 prompt_my_setup_git() {
   branch="$(prompt_my_setup_git_branch)"
   [ -n "$branch" ] || return
 
-  if prompt_my_setup_git_status; then
-    printf '%%F{green} %s%%f' "$branch"
-  else
-    printf '%%F{yellow} %s%%f' "$branch"
-  fi
+  printf '%%F{green} %s%%f' "$branch"
 }
 
 prompt_my_setup_left() {
@@ -85,21 +85,17 @@ prompt_my_setup_container_info() {
 }
 
 prompt_my_setup_right() {
-  container_info="$(prompt_my_setup_container_info)"
-  git_info="$(prompt_my_setup_git)"
-  duration_info="$(prompt_my_setup_duration)"
-
-  if [ -n "$git_info" ]; then
-    printf '%s ' "$git_info"
+  if [ -n "$MY_SETUP_GIT_INFO" ]; then
+    printf '%s ' "$MY_SETUP_GIT_INFO"
   fi
-  if [ -n "$duration_info" ]; then
-    printf '%%F{magenta}󱎫 %s%%f ' "$duration_info"
+  if [ -n "$MY_SETUP_DURATION_INFO" ]; then
+    printf '%%F{magenta}󱎫 %s%%f ' "$MY_SETUP_DURATION_INFO"
   fi
 
-  if [ -n "$container_info" ]; then
-    printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{red}%s%%f' "$container_info"
+  if [ -n "$MY_SETUP_CONTAINER_INFO" ]; then
+    printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{red}%s%%f' "$MY_SETUP_CONTAINER_INFO"
   else
-    printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{cyan}%s%%f' "$(prompt_my_setup_ip)"
+    printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{cyan}%s%%f' "$MY_SETUP_IP_INFO"
   fi
 }
 
