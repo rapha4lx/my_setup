@@ -13,6 +13,7 @@ alias vi="nvim"
 alias v="nvim"
 alias ll="ls -lah"
 alias lg="lazydocker"
+alias lz="lazydocker"
 
 ctls() {
   docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}'
