@@ -3,6 +3,37 @@ prompt_my_setup_git_branch() {
     command git rev-parse --short HEAD 2>/dev/null
 }
 
+prompt_my_setup_preexec() {
+  MY_SETUP_COMMAND_START="$EPOCHREALTIME"
+}
+
+prompt_my_setup_precmd() {
+  if [ -n "$MY_SETUP_COMMAND_START" ]; then
+    MY_SETUP_COMMAND_DURATION="$(
+      awk -v start="$MY_SETUP_COMMAND_START" -v finish="$EPOCHREALTIME" 'BEGIN { printf "%.3f", finish - start }'
+    )"
+    MY_SETUP_COMMAND_START=""
+  fi
+}
+
+prompt_my_setup_duration() {
+  [ -n "$MY_SETUP_COMMAND_DURATION" ] || return
+
+  awk -v duration="$MY_SETUP_COMMAND_DURATION" '
+    BEGIN {
+      if (duration >= 3600) {
+        printf "%dh%02dm%02ds", duration / 3600, (duration % 3600) / 60, duration % 60
+      } else if (duration >= 60) {
+        printf "%dm%02ds", duration / 60, duration % 60
+      } else if (duration >= 1) {
+        printf "%.1fs", duration
+      } else {
+        printf "%dms", duration * 1000
+      }
+    }
+  '
+}
+
 prompt_my_setup_git_status() {
   command git diff --quiet --ignore-submodules -- 2>/dev/null &&
     command git diff --cached --quiet --ignore-submodules -- 2>/dev/null
@@ -56,9 +87,13 @@ prompt_my_setup_container_info() {
 prompt_my_setup_right() {
   container_info="$(prompt_my_setup_container_info)"
   git_info="$(prompt_my_setup_git)"
+  duration_info="$(prompt_my_setup_duration)"
 
   if [ -n "$git_info" ]; then
     printf '%s ' "$git_info"
+  fi
+  if [ -n "$duration_info" ]; then
+    printf '%%F{magenta}󱎫 %s%%f ' "$duration_info"
   fi
 
   if [ -n "$container_info" ]; then
@@ -67,6 +102,10 @@ prompt_my_setup_right() {
     printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{cyan}%s%%f' "$(prompt_my_setup_ip)"
   fi
 }
+
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec prompt_my_setup_preexec
+add-zsh-hook precmd prompt_my_setup_precmd
 
 PROMPT='$(prompt_my_setup_left)
 %F{green}>%f '
