@@ -28,6 +28,7 @@ Optional variables:
 
 - `SETUP_MENU`: Set to `never` to skip the terminal menu. Defaults to `auto`.
 - `INSTALL_BASE`: Install base packages. Defaults to `yes`.
+- `INSTALL_GH`: Install GitHub CLI. Defaults to `yes`.
 - `INSTALL_DOCKER`: Install Docker. Defaults to `yes`.
 - `INSTALL_LAZYDOCKER`: Install LazyDocker. Defaults to `yes`.
 - `INSTALL_NODE20`: Install NVM and Node.js 20. Defaults to `yes`.
@@ -56,16 +57,17 @@ Optional variables:
 Install order:
 
 1. Base packages, including `zsh`, `curl`, `git`, `bash`, `ca-certificates`, `unzip`, `tar`, `neovim`, `ripgrep`, `fd`, `npm`/`node`, and a C compiler
-2. Docker
-3. LazyDocker
-4. NVM and Node.js 20
-5. LazyVim stack: Neovim, LazyVim starter, `tree-sitter` CLI, and plugin sync
-6. OpenCode
-7. Bun / `bunx`
-8. Oh My OpenAgent
-9. Oh My Zsh
-10. Custom Oh My Zsh file
-11. `.zshrc` PATH and `EDITOR` setup
-12. Default shell change to `zsh`
+2. GitHub CLI
+3. Docker
+4. LazyDocker
+5. NVM and Node.js 20
+6. LazyVim stack: Neovim, LazyVim starter, `tree-sitter` CLI, and plugin sync
+7. OpenCode
+8. Bun / `bunx`
+9. Oh My OpenAgent
+10. Oh My Zsh
+11. Custom Oh My Zsh file
+12. `.zshrc` PATH and `EDITOR` setup
+13. Default shell change to `zsh`
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.

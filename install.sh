@@ -41,6 +41,7 @@ can_prompt() {
 
 configure_menu() {
   INSTALL_BASE="${INSTALL_BASE:-yes}"
+  INSTALL_GH="${INSTALL_GH:-yes}"
   INSTALL_DOCKER="${INSTALL_DOCKER:-yes}"
   INSTALL_LAZYDOCKER="${INSTALL_LAZYDOCKER:-yes}"
   INSTALL_NODE20="${INSTALL_NODE20:-yes}"
@@ -61,54 +62,57 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 11
+  printf '%s\n' 12
 }
 
 menu_label() {
   case "$1" in
     1) printf '%s\n' "Base packages" ;;
-    2) printf '%s\n' "Docker" ;;
-    3) printf '%s\n' "LazyDocker" ;;
-    4) printf '%s\n' "NVM + Node.js 20" ;;
-    5) printf '%s\n' "LazyVim stack" ;;
-    6) printf '%s\n' "OpenCode" ;;
-    7) printf '%s\n' "Oh My OpenAgent" ;;
-    8) printf '%s\n' "Oh My Zsh" ;;
-    9) printf '%s\n' "custom Oh My Zsh file" ;;
-    10) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    11) printf '%s\n' "zsh as default shell" ;;
+    2) printf '%s\n' "GitHub CLI" ;;
+    3) printf '%s\n' "Docker" ;;
+    4) printf '%s\n' "LazyDocker" ;;
+    5) printf '%s\n' "NVM + Node.js 20" ;;
+    6) printf '%s\n' "LazyVim stack" ;;
+    7) printf '%s\n' "OpenCode" ;;
+    8) printf '%s\n' "Oh My OpenAgent" ;;
+    9) printf '%s\n' "Oh My Zsh" ;;
+    10) printf '%s\n' "custom Oh My Zsh file" ;;
+    11) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    12) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
 menu_value() {
   case "$1" in
     1) printf '%s\n' "$INSTALL_BASE" ;;
-    2) printf '%s\n' "$INSTALL_DOCKER" ;;
-    3) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
-    4) printf '%s\n' "$INSTALL_NODE20" ;;
-    5) printf '%s\n' "$INSTALL_LAZYVIM_STACK" ;;
-    6) printf '%s\n' "$INSTALL_OPENCODE" ;;
-    7) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    8) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    9) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    10) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    11) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    2) printf '%s\n' "$INSTALL_GH" ;;
+    3) printf '%s\n' "$INSTALL_DOCKER" ;;
+    4) printf '%s\n' "$INSTALL_LAZYDOCKER" ;;
+    5) printf '%s\n' "$INSTALL_NODE20" ;;
+    6) printf '%s\n' "$INSTALL_LAZYVIM_STACK" ;;
+    7) printf '%s\n' "$INSTALL_OPENCODE" ;;
+    8) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    9) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    10) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    11) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    12) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
 menu_set() {
   case "$1" in
     1) INSTALL_BASE="$2" ;;
-    2) INSTALL_DOCKER="$2" ;;
-    3) INSTALL_LAZYDOCKER="$2" ;;
-    4) INSTALL_NODE20="$2" ;;
-    5) INSTALL_LAZYVIM_STACK="$2" ;;
-    6) INSTALL_OPENCODE="$2" ;;
-    7) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    8) INSTALL_OH_MY_ZSH="$2" ;;
-    9) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    10) CONFIGURE_ZSHRC="$2" ;;
-    11) SET_ZSH_DEFAULT="$2" ;;
+    2) INSTALL_GH="$2" ;;
+    3) INSTALL_DOCKER="$2" ;;
+    4) INSTALL_LAZYDOCKER="$2" ;;
+    5) INSTALL_NODE20="$2" ;;
+    6) INSTALL_LAZYVIM_STACK="$2" ;;
+    7) INSTALL_OPENCODE="$2" ;;
+    8) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    9) INSTALL_OH_MY_ZSH="$2" ;;
+    10) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    11) CONFIGURE_ZSHRC="$2" ;;
+    12) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -238,6 +242,43 @@ install_packages() {
     brew install $packages
   else
     die "No supported package manager found. Install zsh, curl, and git manually, then rerun this script."
+  fi
+}
+
+install_gh() {
+  if has gh; then
+    log "GitHub CLI already installed"
+    return
+  fi
+
+  log "Installing GitHub CLI"
+  if has apt-get; then
+    run_as_root mkdir -p /etc/apt/keyrings
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg |
+      run_as_root tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+    run_as_root chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    printf 'deb [arch=%s signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\n' "$(dpkg --print-architecture)" |
+      run_as_root tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+    run_as_root apt-get update
+    run_as_root apt-get install -y gh
+  elif has dnf; then
+    run_as_root dnf install -y dnf5-plugins >/dev/null 2>&1 || run_as_root dnf install -y 'dnf-command(config-manager)'
+    run_as_root dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+    run_as_root dnf install -y gh --repo gh-cli
+  elif has yum; then
+    run_as_root yum install -y yum-utils
+    run_as_root yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+    run_as_root yum install -y gh
+  elif has pacman; then
+    run_as_root pacman -Sy --noconfirm --needed github-cli
+  elif has apk; then
+    run_as_root apk add --no-cache github-cli
+  elif has zypper; then
+    run_as_root zypper --non-interactive install gh
+  elif has brew; then
+    brew install gh
+  else
+    warn "No supported package manager found for GitHub CLI. Install gh manually."
   fi
 }
 
@@ -761,6 +802,9 @@ main() {
   if is_yes "$INSTALL_BASE"; then
     log "Installing required packages"
     install_packages
+  fi
+  if is_yes "$INSTALL_GH"; then
+    install_gh
   fi
   if is_yes "$INSTALL_DOCKER"; then
     install_docker
