@@ -13,9 +13,9 @@ prompt_my_setup_git() {
   [ -n "$branch" ] || return
 
   if prompt_my_setup_git_status; then
-    printf '%%F{green} %s%%f' "$branch"
+    printf '%%F{green} %s%%f' "$branch"
   else
-    printf '%%F{yellow} %s%%f' "$branch"
+    printf '%%F{yellow} %s%%f' "$branch"
   fi
 }
 
@@ -57,14 +57,14 @@ prompt_my_setup_right() {
   container_info="$(prompt_my_setup_container_info)"
   git_info="$(prompt_my_setup_git)"
 
+  if [ -n "$git_info" ]; then
+    printf '%s ' "$git_info"
+  fi
+
   if [ -n "$container_info" ]; then
     printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{red}%s%%f' "$container_info"
   else
     printf '%%F{yellow}%%D{%%H:%%M:%%S}%%f %%F{cyan}%s%%f' "$(prompt_my_setup_ip)"
-  fi
-
-  if [ -n "$git_info" ]; then
-    printf ' %s' "$git_info"
   fi
 }
 
