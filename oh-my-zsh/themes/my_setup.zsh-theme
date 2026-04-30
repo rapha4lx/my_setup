@@ -58,6 +58,6 @@ prompt_my_setup_right() {
   fi
 }
 
-PROMPT='%(?.%F{green}.%F{red})%n%f@%F{blue}%m%f %F{magenta}%~%f$(prompt_my_setup_git)
+PROMPT='%(?.%F{green}.%F{red})%n%f %F{magenta}%~%f$(prompt_my_setup_git)
 %F{green}>%f '
 RPROMPT='$(prompt_my_setup_right)'
