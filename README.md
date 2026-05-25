@@ -1,6 +1,6 @@
 # my_setup
 
-Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, LazyVim, OpenCode, and Oh My OpenAgent.
+Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, LazyVim, OpenCode, RTK, and Oh My OpenAgent.
 
 ## Run from curl
 
@@ -36,11 +36,14 @@ Optional variables:
 - `INSTALL_LAZYVIM_STACK`: Install Neovim, LazyVim starter, `tree-sitter` CLI, and run LazyVim sync. Defaults to `yes`.
 - `NEOVIM_MIN_VERSION`: Minimum Neovim version required for LazyVim. Defaults to `0.11.2`.
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
+- `INSTALL_RTK`: Install RTK and configure it for OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
 - `INSTALL_OH_MY_ZSH`: Install Oh My Zsh. Defaults to `yes`.
 - `INSTALL_CUSTOM_OH_MY_ZSH`: Install the custom Oh My Zsh file. Defaults to `yes`.
 - `CONFIGURE_ZSHRC`: Configure `.zshrc` PATH and `EDITOR`. Defaults to `yes`.
 - `SET_ZSH_DEFAULT`: Set `zsh` as the default shell. Defaults to `yes`.
+- `MY_SETUP_RESTORE_LAST_DIR`: Restore the last accessed directory in new interactive shells and save it on every `cd`. Defaults to `yes`.
+- `MY_SETUP_LAST_DIR_FILE`: File used to store the last directory. Defaults to `$XDG_STATE_HOME/my_setup/last_dir` or `$HOME/.local/state/my_setup/last_dir`.
 - `CUSTOM_OH_MY_ZSH_SOURCE`: Source file or URL for the custom Oh My Zsh file. Defaults to this repo's raw `oh-my-zsh/my_setup.zsh`.
 - `CUSTOM_OH_MY_ZSH_THEME_SOURCE`: Source file or URL for the custom Oh My Zsh theme. Defaults to this repo's raw `oh-my-zsh/themes/my_setup.zsh-theme`.
 - `LAZYDOCKER_DIR`: LazyDocker install destination on Linux. Defaults to `$HOME/.local/bin`.
@@ -63,8 +66,8 @@ Install order:
 5. NVM and Node.js 20
 6. LazyVim stack: Neovim, LazyVim starter, `tree-sitter` CLI, and plugin sync
 7. OpenCode
-8. Bun / `bunx`
-9. Oh My OpenAgent
+8. RTK and OpenCode integration
+9. Oh My OpenAgent, including Bun / `bunx`
 10. Oh My Zsh
 11. Custom Oh My Zsh file
 12. `.zshrc` PATH and `EDITOR` setup

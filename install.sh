@@ -47,6 +47,7 @@ configure_menu() {
   INSTALL_NODE20="${INSTALL_NODE20:-yes}"
   INSTALL_LAZYVIM_STACK="${INSTALL_LAZYVIM_STACK:-yes}"
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
+  INSTALL_RTK="${INSTALL_RTK:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
   INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
   INSTALL_CUSTOM_OH_MY_ZSH="${INSTALL_CUSTOM_OH_MY_ZSH:-yes}"
@@ -62,7 +63,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 12
+  printf '%s\n' 13
 }
 
 menu_label() {
@@ -74,11 +75,12 @@ menu_label() {
     5) printf '%s\n' "NVM + Node.js 20" ;;
     6) printf '%s\n' "LazyVim stack" ;;
     7) printf '%s\n' "OpenCode" ;;
-    8) printf '%s\n' "Oh My OpenAgent" ;;
-    9) printf '%s\n' "Oh My Zsh" ;;
-    10) printf '%s\n' "custom Oh My Zsh file" ;;
-    11) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    12) printf '%s\n' "zsh as default shell" ;;
+    8) printf '%s\n' "RTK + OpenCode setup" ;;
+    9) printf '%s\n' "Oh My OpenAgent" ;;
+    10) printf '%s\n' "Oh My Zsh" ;;
+    11) printf '%s\n' "custom Oh My Zsh file" ;;
+    12) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    13) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -91,11 +93,12 @@ menu_value() {
     5) printf '%s\n' "$INSTALL_NODE20" ;;
     6) printf '%s\n' "$INSTALL_LAZYVIM_STACK" ;;
     7) printf '%s\n' "$INSTALL_OPENCODE" ;;
-    8) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    9) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    10) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    11) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    12) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    8) printf '%s\n' "$INSTALL_RTK" ;;
+    9) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
+    10) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    11) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    12) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    13) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -108,11 +111,12 @@ menu_set() {
     5) INSTALL_NODE20="$2" ;;
     6) INSTALL_LAZYVIM_STACK="$2" ;;
     7) INSTALL_OPENCODE="$2" ;;
-    8) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    9) INSTALL_OH_MY_ZSH="$2" ;;
-    10) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    11) CONFIGURE_ZSHRC="$2" ;;
-    12) SET_ZSH_DEFAULT="$2" ;;
+    8) INSTALL_RTK="$2" ;;
+    9) INSTALL_OH_MY_OPENAGENT="$2" ;;
+    10) INSTALL_OH_MY_ZSH="$2" ;;
+    11) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    12) CONFIGURE_ZSHRC="$2" ;;
+    13) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -614,6 +618,30 @@ install_opencode() {
   esac
 }
 
+install_rtk() {
+  if has rtk && rtk gain >/dev/null 2>&1; then
+    log "RTK already installed"
+    return
+  fi
+
+  if has brew; then
+    log "Installing RTK with Homebrew"
+    brew install rtk
+    return
+  fi
+
+  case "$(uname -s)" in
+    Linux | Darwin)
+      log "Installing RTK"
+      curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+      prepend_user_bins_to_path
+      ;;
+    *)
+      warn "Automatic RTK install is only configured for Linux, macOS, or Homebrew. Install RTK manually."
+      ;;
+  esac
+}
+
 install_bun() {
   if has bun && has bunx; then
     log "Bun already installed"
@@ -646,6 +674,21 @@ install_oh_my_openagent() {
     --kimi-for-coding="${OMO_KIMI_FOR_CODING:-no}" \
     --vercel-ai-gateway="${OMO_VERCEL_AI_GATEWAY:-no}" \
     --skip-auth
+}
+
+configure_rtk_for_opencode() {
+  if ! has rtk; then
+    warn "RTK is not available; skipping OpenCode integration"
+    return
+  fi
+
+  if ! has opencode; then
+    warn "OpenCode is not available; skipping RTK OpenCode integration"
+    return
+  fi
+
+  log "Configuring RTK for OpenCode"
+  rtk init -g --opencode --auto-patch
 }
 
 install_oh_my_zsh() {
@@ -820,6 +863,12 @@ main() {
   fi
   if is_yes "$INSTALL_OPENCODE"; then
     install_opencode
+  fi
+  if is_yes "$INSTALL_RTK"; then
+    install_rtk
+  fi
+  if is_yes "$INSTALL_OPENCODE" || is_yes "$INSTALL_RTK"; then
+    configure_rtk_for_opencode
   fi
   if is_yes "$INSTALL_OH_MY_OPENAGENT"; then
     install_oh_my_openagent
