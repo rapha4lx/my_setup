@@ -78,12 +78,16 @@ Install order:
 7. OpenCode
 8. RTK and OpenCode integration
 9. Oh My OpenAgent, including Bun / `bunx`
-10. Personal Claude Code skills (synced into `~/.claude/skills/`)
+10. Personal Claude Code skills (synced into `~/.claude/skills/`, plus a `SessionStart` hook in `~/.claude/settings.json` that re-syncs them automatically, at most every 6 hours, on every future Claude Code session on that machine)
 11. Oh My Zsh
 12. Custom Oh My Zsh file
 13. `.zshrc` PATH and `EDITOR` setup
 14. Default shell change to `zsh`
 
 See [`claude-skills/README.md`](claude-skills/README.md) for how to add or sync skills.
+
+### Automatic re-sync via SessionStart hook
+
+Both the full bootstrap and `CLAUDE_SKILLS_ONLY=yes` write `~/.claude/claude-skills-sync.sh` and register it as a `SessionStart` hook in `~/.claude/settings.json` (merged in-place with `jq`, falling back to `python3`; existing settings are preserved). From then on, every new Claude Code session on that machine re-runs the sync in the background, rate-limited to once every 6 hours, so a new skill pushed to `claude-skills/` reaches that machine the next time a session starts there — no manual command needed after the first setup. If neither `jq` nor `python3` is available, the hook is skipped with a warning and the sync script can still be run manually.
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.

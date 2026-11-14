@@ -719,6 +719,108 @@ install_claude_skills() {
   done
 
   [ -n "$tmp_dir" ] && rm -rf "$tmp_dir"
+
+  configure_claude_skills_hook
+}
+
+configure_claude_skills_hook() {
+  settings_file="$HOME/.claude/settings.json"
+  sync_script="$HOME/.claude/claude-skills-sync.sh"
+  install_url="${CLAUDE_SKILLS_INSTALL_URL:-https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh}"
+
+  mkdir -p "$HOME/.claude"
+
+  cat >"$sync_script" <<SYNC_EOF
+#!/usr/bin/env sh
+set -eu
+MARKER="\$HOME/.claude/.claude-skills-last-sync"
+MIN_INTERVAL=21600
+now=\$(date +%s)
+last=\$(cat "\$MARKER" 2>/dev/null || printf '0')
+case "\$last" in '' | *[!0-9]*) last=0 ;; esac
+if [ \$((now - last)) -lt "\$MIN_INTERVAL" ]; then
+  exit 0
+fi
+printf '%s' "\$now" >"\$MARKER"
+curl -fsSL "$install_url" | CLAUDE_SKILLS_ONLY=yes sh
+SYNC_EOF
+  chmod +x "$sync_script"
+
+  hook_command="sh \"\$HOME/.claude/claude-skills-sync.sh\" >/tmp/claude-skills-sync.log 2>&1"
+
+  if has jq; then
+    tmp_settings="$(mktemp)"
+    if [ -f "$settings_file" ]; then
+      cp "$settings_file" "$tmp_settings"
+    else
+      printf '{}' >"$tmp_settings"
+    fi
+    if jq -e --arg cmd "$hook_command" \
+      '(.hooks.SessionStart // []) | any(.hooks[]?; .command == $cmd)' \
+      "$tmp_settings" >/dev/null 2>&1; then
+      log "Claude Code SessionStart skills-sync hook already present"
+    elif jq --arg cmd "$hook_command" '
+        .hooks = (.hooks // {}) |
+        .hooks.SessionStart = ((.hooks.SessionStart // []) + [{
+          "hooks": [{"type": "command", "command": $cmd, "async": true, "timeout": 120, "statusMessage": "Checking personal Claude Code skills..."}]
+        }])
+      ' "$tmp_settings" >"${tmp_settings}.out" 2>/dev/null; then
+      mv "${tmp_settings}.out" "$settings_file"
+      log "Added Claude Code SessionStart skills-sync hook to $settings_file"
+    else
+      warn "jq failed to update $settings_file; leaving it unchanged"
+    fi
+    rm -f "$tmp_settings" "${tmp_settings}.out"
+  elif has python3 && python3 -c 'import json' >/dev/null 2>&1; then
+    if CLAUDE_SETTINGS_FILE="$settings_file" CLAUDE_HOOK_COMMAND="$hook_command" python3 <<'PY_EOF'
+import json
+import os
+
+path = os.environ["CLAUDE_SETTINGS_FILE"]
+cmd = os.environ["CLAUDE_HOOK_COMMAND"]
+
+try:
+    with open(path) as f:
+        data = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    data = {}
+
+hooks = data.setdefault("hooks", {})
+session_start = hooks.setdefault("SessionStart", [])
+
+already = any(
+    h.get("command") == cmd
+    for group in session_start
+    for h in group.get("hooks", [])
+)
+
+if not already:
+    session_start.append({
+        "hooks": [{
+            "type": "command",
+            "command": cmd,
+            "async": True,
+            "timeout": 120,
+            "statusMessage": "Checking personal Claude Code skills...",
+        }]
+    })
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    print("==> Added Claude Code SessionStart skills-sync hook to", path)
+else:
+    print("==> Claude Code SessionStart skills-sync hook already present")
+PY_EOF
+    then
+      :
+    else
+      warn "python3 failed to update $settings_file; leaving it unchanged"
+    fi
+  else
+    warn "Neither jq nor a working python3 found; skipping SessionStart hook setup for Claude Code skills sync"
+    warn "Run $sync_script manually, or add its SessionStart hook to $settings_file by hand"
+  fi
 }
 
 configure_rtk_for_opencode() {
