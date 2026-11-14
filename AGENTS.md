@@ -7,8 +7,9 @@ This repository is a small shell-based bootstrap setup.
 - `README.md`: usage, configuration flags, and install order.
 - `oh-my-zsh/my_setup.zsh`: custom Oh My Zsh behavior and aliases.
 - `oh-my-zsh/themes/my_setup.zsh-theme`: custom prompt theme.
+- `claude-skills/`: personal Claude Code skills, one folder per skill, synced into `~/.claude/skills/` by `install.sh` (or via `CLAUDE_SKILLS_ONLY=yes`).
 
-Keep new setup logic in `install.sh` unless it is specific to Zsh runtime behavior, in which case place it under `oh-my-zsh/`.
+Keep new setup logic in `install.sh` unless it is specific to Zsh runtime behavior, in which case place it under `oh-my-zsh/`. Add or edit skills under `claude-skills/<skill-name>/`.
 
 ## Build, Test, and Development Commands
 There is no build system. Use shell checks and manual runs.

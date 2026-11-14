@@ -49,6 +49,7 @@ configure_menu() {
   INSTALL_OPENCODE="${INSTALL_OPENCODE:-yes}"
   INSTALL_RTK="${INSTALL_RTK:-yes}"
   INSTALL_OH_MY_OPENAGENT="${INSTALL_OH_MY_OPENAGENT:-yes}"
+  INSTALL_CLAUDE_SKILLS="${INSTALL_CLAUDE_SKILLS:-yes}"
   INSTALL_OH_MY_ZSH="${INSTALL_OH_MY_ZSH:-yes}"
   INSTALL_CUSTOM_OH_MY_ZSH="${INSTALL_CUSTOM_OH_MY_ZSH:-yes}"
   CONFIGURE_ZSHRC="${CONFIGURE_ZSHRC:-yes}"
@@ -63,7 +64,7 @@ configure_menu() {
 }
 
 menu_count() {
-  printf '%s\n' 13
+  printf '%s\n' 14
 }
 
 menu_label() {
@@ -77,10 +78,11 @@ menu_label() {
     7) printf '%s\n' "OpenCode" ;;
     8) printf '%s\n' "RTK + OpenCode setup" ;;
     9) printf '%s\n' "Oh My OpenAgent" ;;
-    10) printf '%s\n' "Oh My Zsh" ;;
-    11) printf '%s\n' "custom Oh My Zsh file" ;;
-    12) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
-    13) printf '%s\n' "zsh as default shell" ;;
+    10) printf '%s\n' "Claude Code personal skills" ;;
+    11) printf '%s\n' "Oh My Zsh" ;;
+    12) printf '%s\n' "custom Oh My Zsh file" ;;
+    13) printf '%s\n' ".zshrc PATH and EDITOR setup" ;;
+    14) printf '%s\n' "zsh as default shell" ;;
   esac
 }
 
@@ -95,10 +97,11 @@ menu_value() {
     7) printf '%s\n' "$INSTALL_OPENCODE" ;;
     8) printf '%s\n' "$INSTALL_RTK" ;;
     9) printf '%s\n' "$INSTALL_OH_MY_OPENAGENT" ;;
-    10) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
-    11) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
-    12) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
-    13) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
+    10) printf '%s\n' "$INSTALL_CLAUDE_SKILLS" ;;
+    11) printf '%s\n' "$INSTALL_OH_MY_ZSH" ;;
+    12) printf '%s\n' "$INSTALL_CUSTOM_OH_MY_ZSH" ;;
+    13) printf '%s\n' "$CONFIGURE_ZSHRC" ;;
+    14) printf '%s\n' "$SET_ZSH_DEFAULT" ;;
   esac
 }
 
@@ -113,10 +116,11 @@ menu_set() {
     7) INSTALL_OPENCODE="$2" ;;
     8) INSTALL_RTK="$2" ;;
     9) INSTALL_OH_MY_OPENAGENT="$2" ;;
-    10) INSTALL_OH_MY_ZSH="$2" ;;
-    11) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
-    12) CONFIGURE_ZSHRC="$2" ;;
-    13) SET_ZSH_DEFAULT="$2" ;;
+    10) INSTALL_CLAUDE_SKILLS="$2" ;;
+    11) INSTALL_OH_MY_ZSH="$2" ;;
+    12) INSTALL_CUSTOM_OH_MY_ZSH="$2" ;;
+    13) CONFIGURE_ZSHRC="$2" ;;
+    14) SET_ZSH_DEFAULT="$2" ;;
   esac
 }
 
@@ -676,6 +680,47 @@ install_oh_my_openagent() {
     --skip-auth
 }
 
+install_claude_skills() {
+  claude_skills_dir="$HOME/.claude/skills"
+  repo_url="${CLAUDE_SKILLS_REPO_URL:-https://github.com/rapha4lx/my_setup.git}"
+  repo_subdir="${CLAUDE_SKILLS_REPO_SUBDIR:-claude-skills}"
+  tmp_dir=""
+
+  if [ -d "./$repo_subdir" ] && [ -z "${CLAUDE_SKILLS_REPO_URL:-}" ]; then
+    source_dir="./$repo_subdir"
+  else
+    if ! has git; then
+      warn "git not found; skipping Claude Code skills sync"
+      return
+    fi
+    tmp_dir="$(mktemp -d)"
+    log "Fetching Claude Code skills from $repo_url"
+    if ! git clone --depth 1 "$repo_url" "$tmp_dir/repo" >/dev/null 2>&1; then
+      warn "Could not clone $repo_url; skipping Claude Code skills sync"
+      rm -rf "$tmp_dir"
+      return
+    fi
+    source_dir="$tmp_dir/repo/$repo_subdir"
+  fi
+
+  if [ ! -d "$source_dir" ]; then
+    warn "No skills found at $source_dir"
+    [ -n "$tmp_dir" ] && rm -rf "$tmp_dir"
+    return
+  fi
+
+  mkdir -p "$claude_skills_dir"
+  for skill_path in "$source_dir"/*/; do
+    [ -d "$skill_path" ] || continue
+    skill_name="$(basename "$skill_path")"
+    log "Installing Claude Code skill: $skill_name"
+    rm -rf "$claude_skills_dir/$skill_name"
+    cp -r "$skill_path" "$claude_skills_dir/$skill_name"
+  done
+
+  [ -n "$tmp_dir" ] && rm -rf "$tmp_dir"
+}
+
 configure_rtk_for_opencode() {
   if ! has rtk; then
     warn "RTK is not available; skipping OpenCode integration"
@@ -839,6 +884,12 @@ set_default_shell() {
 main() {
   trap cleanup_and_exit INT TERM
 
+  if is_yes "${CLAUDE_SKILLS_ONLY:-no}"; then
+    install_claude_skills
+    log "Done."
+    exit 0
+  fi
+
   prepend_user_bins_to_path
   configure_menu
 
@@ -872,6 +923,9 @@ main() {
   fi
   if is_yes "$INSTALL_OH_MY_OPENAGENT"; then
     install_oh_my_openagent
+  fi
+  if is_yes "$INSTALL_CLAUDE_SKILLS"; then
+    install_claude_skills
   fi
   if is_yes "$INSTALL_OH_MY_ZSH"; then
     install_oh_my_zsh

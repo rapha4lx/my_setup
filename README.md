@@ -1,6 +1,6 @@
 # my_setup
 
-Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, LazyVim, OpenCode, RTK, and Oh My OpenAgent.
+Bootstrap a new machine with `zsh`, Oh My Zsh, Docker, LazyDocker, LazyVim, OpenCode, RTK, Oh My OpenAgent, and personal Claude Code skills.
 
 ## Run from curl
 
@@ -24,6 +24,12 @@ Example disabling Docker:
 curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | SETUP_MENU=never INSTALL_DOCKER=no sh
 ```
 
+To only sync personal Claude Code skills onto a machine (new or existing), without touching packages, zsh, Docker, etc.:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rapha4lx/my_setup/main/install.sh | CLAUDE_SKILLS_ONLY=yes sh
+```
+
 Optional variables:
 
 - `SETUP_MENU`: Set to `never` to skip the terminal menu. Defaults to `auto`.
@@ -38,6 +44,10 @@ Optional variables:
 - `INSTALL_OPENCODE`: Install OpenCode. Defaults to `yes`.
 - `INSTALL_RTK`: Install RTK and configure it for OpenCode. Defaults to `yes`.
 - `INSTALL_OH_MY_OPENAGENT`: Install Oh My OpenAgent. Defaults to `yes`.
+- `INSTALL_CLAUDE_SKILLS`: Sync personal Claude Code skills from `claude-skills/` in this repo into `~/.claude/skills/`. Defaults to `yes`.
+- `CLAUDE_SKILLS_ONLY`: Set to `yes` to only run the Claude Code skills sync and exit, skipping the full bootstrap and the menu. Defaults to `no`.
+- `CLAUDE_SKILLS_REPO_URL`: Git URL to clone for the skills source. Defaults to this repo.
+- `CLAUDE_SKILLS_REPO_SUBDIR`: Subdirectory inside the skills source repo holding the skill folders. Defaults to `claude-skills`.
 - `INSTALL_OH_MY_ZSH`: Install Oh My Zsh. Defaults to `yes`.
 - `INSTALL_CUSTOM_OH_MY_ZSH`: Install the custom Oh My Zsh file. Defaults to `yes`.
 - `CONFIGURE_ZSHRC`: Configure `.zshrc` PATH and `EDITOR`. Defaults to `yes`.
@@ -68,9 +78,12 @@ Install order:
 7. OpenCode
 8. RTK and OpenCode integration
 9. Oh My OpenAgent, including Bun / `bunx`
-10. Oh My Zsh
-11. Custom Oh My Zsh file
-12. `.zshrc` PATH and `EDITOR` setup
-13. Default shell change to `zsh`
+10. Personal Claude Code skills (synced into `~/.claude/skills/`)
+11. Oh My Zsh
+12. Custom Oh My Zsh file
+13. `.zshrc` PATH and `EDITOR` setup
+14. Default shell change to `zsh`
+
+See [`claude-skills/README.md`](claude-skills/README.md) for how to add or sync skills.
 
 Supported package managers for base packages: `apt-get`, `dnf`, `yum`, `pacman`, `apk`, `zypper`, and `brew`.
